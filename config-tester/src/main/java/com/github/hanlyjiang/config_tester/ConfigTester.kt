@@ -1,14 +1,22 @@
 package com.github.hanlyjiang.config_tester
 
+import com.github.hanlyjiang.config_tester.Urls.Url
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
+import java.io.File
+import java.io.FileWriter
 import java.nio.charset.Charset
+import java.util.concurrent.TimeUnit
 
 
 class ConfigTester {
-    var client: OkHttpClient = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor())
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .addInterceptor(HttpLoggingInterceptor())
 //                .cache(Cache(cacheDir, cacheSize))
         .build()
 
@@ -19,9 +27,25 @@ class ConfigTester {
     fun testMultiUrls(url: String) {
         println(message = "testMultiUrls:$url")
         requestContent(url).let { result ->
-            println("result:$result")
+//            println("result:$result")
+            val validUrls = Urls()
             val urls: Urls = Gson().fromJson(result, Urls::class.java)
-            println("urls:$urls")
+            urls.urls.forEach {
+                requestContent(it.url).let { content ->
+                    (content != "").apply {
+                        println("test:${it.name} ($this)-> ${it.url}")
+                        if (this) {
+                            validUrls.urls.add(it)
+                        }
+                    }
+                }
+            }
+            println("valid:${validUrls.urls.size}")
+            FileWriter(File("./cr.json")).apply {
+                write(Gson().toJson(validUrls))
+                flush()
+            }.close()
+
         }
     }
 
@@ -29,14 +53,20 @@ class ConfigTester {
         return Request.Builder().url(url).get().build()
     }
 
-
     private fun requestContent(url: String): String {
-        val response = client.newCall(get(url)).execute()
-        return if (response.code == 200) {
+        val response: Response?
+        try {
+            response = client.newCall(get(url)).execute()
+        } catch (e: Exception) {
+            return ""
+        }
+        val result = if (response.code == 200) {
             response.body?.byteString()?.string(Charset.defaultCharset()) ?: ""
         } else {
             ""
         }
+        response.body?.close()
+        return result
     }
 
 }

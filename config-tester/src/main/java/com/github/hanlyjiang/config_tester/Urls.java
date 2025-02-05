@@ -1,9 +1,10 @@
 package com.github.hanlyjiang.config_tester;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Urls {
-    public Url[] urls;
+    public List<Url> urls = new ArrayList<>();
 
     public static class Url {
         public String url;
@@ -22,7 +23,7 @@ public class Urls {
     @Override
     public String toString() {
         return "Urls{" +
-                "urls=" + Arrays.toString(urls) +
+                "urls=" + urls.toString() +
                 '}';
     }
 }
