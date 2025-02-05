@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'ru.cleverpumpkin.proguard-dictionaries-generator'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -31,6 +32,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
 
     configurations.configureEach {
         resolutionStrategy {
@@ -47,4 +51,13 @@ dependencies {
     implementation 'cn.wanghaomiao:JsoupXpath:2.5.1'
     implementation 'com.orhanobut:logger:2.2.0'
     implementation 'org.jsoup:jsoup:1.18.3'
+    implementation 'androidx.core:core-ktx:1.15.0'
+
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+
+    implementation(project(":config-tester"))
+
 }
+
+apply from: rootProject.file("gradle/test.gradle")
