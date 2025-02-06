@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit
 
 class ConfigTester {
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(5, TimeUnit.SECONDS)
+        .connectTimeout(1, TimeUnit.SECONDS)
+        .readTimeout(1, TimeUnit.SECONDS)
         .addInterceptor(HttpLoggingInterceptor())
 //                .cache(Cache(cacheDir, cacheSize))
         .build()
@@ -32,7 +32,7 @@ class ConfigTester {
             val urls: Urls = Gson().fromJson(result, Urls::class.java)
             urls.urls.forEach {
                 requestContent(it.url).let { content ->
-                    (content != "").apply {
+                    (content.isValidJson()).apply {
                         println("test:${it.name} ($this)-> ${it.url}")
                         if (this) {
                             validUrls.urls.add(it)
@@ -47,6 +47,10 @@ class ConfigTester {
             }.close()
 
         }
+    }
+
+    private fun String.isValidJson(): Boolean {
+        return startsWith("{") && endsWith("}")
     }
 
     private fun get(url: String): Request {
